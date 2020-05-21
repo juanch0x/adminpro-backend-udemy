@@ -9,17 +9,32 @@ var Usuario = require('../models/usuario');
  * Listar los usuarios.
  */
 app.get('/', (request, response, _) => {
-  Usuario.find({}, 'nombre email img role').exec((error, usuarios) => {
-    if (error)
+
+
+
+  const desde = Number(request.query.desde || 0);
+
+  Usuario.find({}, 'nombre email img role')
+  .skip(desde)
+  .limit(5)
+  .exec((error, usuarios) => {
+    if (error){
+
       return response.status(500).json({
         ok: false,
         mensaje: 'error en base de datos.',
         errors: error,
       });
-    response.status(200).json({
-      ok: true,
-      usuarios: usuarios,
-    });
+    }
+
+    Usuario.count({}, (_, total) => {
+      response.status(200).json({
+        ok: true,
+        usuarios: usuarios,
+        total
+      });
+    })
+
   });
 });
 
